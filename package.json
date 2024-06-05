@@ -1,0 +1,21 @@
+{
+    "name": "async-validator-deno",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+      "test": "vitest --config ./vitest.config.ts",
+      "coverage": "vitest --config ./vitest.config.ts run --coverage"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+      "@vitest/coverage-istanbul": "^1.6.0",
+      "async-validator": "^4.2.5",
+      "cross-env": "^7.0.3",
+      "typescript": "^5.4.5",
+      "vitest": "^1.6.0"
+    }
+  }
+  
