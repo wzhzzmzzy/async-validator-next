@@ -1,61 +1,61 @@
-import type { InternalValidateMessages } from "../types/async-validator"
+import type { InternalValidateMessages } from "../types/async-validator";
 
 export const MESSAGES = {
   RULES_REQUIRED: "初始化 Schema 失败，缺少参数",
   RULES_TYPE: "初始化参数需要是 Object",
-}
+};
 
 export function VALIDATION_MESSAGES(): InternalValidateMessages {
   return {
-    default: "Validation error on field %s",
-    required: "%s is required",
-    enum: "%s must be one of %s",
-    whitespace: "%s cannot be empty",
+    default: "字段%s验证错误",
+    required: "%s是必需的",
+    enum: "%s必须是%s之一",
+    whitespace: "%s不能为空",
     date: {
-      format: "%s date %s is invalid for format %s",
-      parse: "%s date could not be parsed, %s is invalid ",
-      invalid: "%s date %s is invalid",
+      format: "%s日期%s格式无效，应为%s",
+      parse: "%s日期无法解析，%s无效",
+      invalid: "%s日期%s无效",
     },
     types: {
-      string: "%s is not a %s",
-      method: "%s is not a %s (function)",
-      array: "%s is not an %s",
-      object: "%s is not an %s",
-      number: "%s is not a %s",
-      date: "%s is not a %s",
-      boolean: "%s is not a %s",
-      integer: "%s is not an %s",
-      float: "%s is not a %s",
-      regexp: "%s is not a valid %s",
-      email: "%s is not a valid %s",
-      url: "%s is not a valid %s",
-      hex: "%s is not a valid %s",
+      string: "%s不是%s",
+      method: "%s不是%s（函数）",
+      array: "%s不是%s",
+      object: "%s不是%s",
+      number: "%s不是%s",
+      date: "%s不是%s",
+      boolean: "%s不是%s",
+      integer: "%s不是%s",
+      float: "%s不是%s",
+      regexp: "%s不是有效的%s",
+      email: "%s不是有效的%s",
+      url: "%s不是有效的%s",
+      hex: "%s不是有效的%s",
     },
     string: {
-      len: "%s must be exactly %s characters",
-      min: "%s must be at least %s characters",
-      max: "%s cannot be longer than %s characters",
-      range: "%s must be between %s and %s characters",
+      len: "%s必须是%s个字符",
+      min: "%s至少必须是%s个字符",
+      max: "%s不能超过%s个字符",
+      range: "%s必须在%s和%s个字符之间",
     },
     number: {
-      len: "%s must equal %s",
-      min: "%s cannot be less than %s",
-      max: "%s cannot be greater than %s",
-      range: "%s must be between %s and %s",
+      len: "%s必须等于%s",
+      min: "%s不能小于%s",
+      max: "%s不能大于%s",
+      range: "%s必须在%s和%s之间",
     },
     array: {
-      len: "%s must be exactly %s in length",
-      min: "%s cannot be less than %s in length",
-      max: "%s cannot be greater than %s in length",
-      range: "%s must be between %s and %s in length",
+      len: "%s的长度必须正好是%s",
+      min: "%s的长度不能小于%s",
+      max: "%s的长度不能大于%s",
+      range: "%s的长度必须在%s和%s之间",
     },
     pattern: {
-      mismatch: "%s value %s does not match pattern %s",
+      mismatch: "%s的值%s不符合模式%s",
     },
     clone() {
-      const cloned = JSON.parse(JSON.stringify(this))
-      cloned.clone = this.clone
-      return cloned
+      const cloned = JSON.parse(JSON.stringify(this));
+      cloned.clone = this.clone;
+      return cloned;
     },
-  }
+  };
 }
