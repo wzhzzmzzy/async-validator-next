@@ -19,6 +19,7 @@ import array from "./array";
 import date from "./date";
 import number from "./number";
 import pattern from "./pattern";
+import typeFn from './type';
 
 const validators = {
   any,
@@ -31,6 +32,7 @@ const validators = {
   number,
   pattern,
   enum: enumFn,
+  url: typeFn,
 };
 
 const getRuleType: (rule: RuleItem) => RuleType = (rule) => {
