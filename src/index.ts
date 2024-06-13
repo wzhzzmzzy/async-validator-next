@@ -239,24 +239,38 @@ class Schema {
     /**
       @description collect errors from validator
      */
-    const callback = (error?: SyncErrorType | SyncErrorType[]) => {
-      if (!error) return;
+    const validateCallback =
+      (internalRule: InternalRuleItem) =>
+      (error?: SyncErrorType | SyncErrorType[]) => {
+        if (!error) return;
 
-      const errorList = Array.isArray(error) ? error : [error];
+        let errorList = Array.isArray(error) ? error : [error];
 
-      const rules = this.internalRules[key]?.[0];
-      errors = errors.concat(
-        errorList.map((e) => ({
-          message: e instanceof Error ? e.message : e,
-          field: rules?.fullField ?? key,
-          fieldValue: source[key],
-        })),
-      );
+        if (errorList.length && internalRule.message !== undefined) {
+          if (typeof internalRule.message === "function") {
+            errorList = [
+              internalRule.message(
+                internalRule.fullField || internalRule.field,
+              ),
+            ];
+          } else {
+            errorList = [internalRule.message];
+          }
+        }
 
-      if (!option.suppressWarning && errors.length) {
-        Schema.warning("async-validator-next:", errors);
-      }
-    };
+        const rules = this.internalRules[key]?.[0];
+        errors = errors.concat(
+          errorList.map((e) => ({
+            message: e instanceof Error ? e.message : e,
+            field: rules?.fullField ?? key,
+            fieldValue: source[key],
+          })),
+        );
+
+        if (!option.suppressWarning && errors.length) {
+          Schema.warning("async-validator-next:", errors);
+        }
+      };
 
     /* traverse all validators in rules */
     for (const internalRule of this.internalRules[key]) {
@@ -271,6 +285,7 @@ class Schema {
       }
       for (const validator of internalRule.validators) {
         let res: SyncValidateResult | void;
+        const callback = validateCallback(internalRule);
         try {
           res = validator!(internalRule, fieldValue, callback, source, option);
         } catch (error) {
