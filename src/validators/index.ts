@@ -5,89 +5,98 @@ import type {
   RuleItem,
   RuleType,
   SchemaOption,
-} from "../types/async-validator"
-import { format } from "../utils"
-import Schema from ".."
-import required from "./required"
-import any from "./any"
-import object from "./object"
+} from "../types/async-validator";
+import { format } from "../utils";
+import Schema from "..";
+import required from "./required";
+import any from "./any";
+import object from "./object";
+import enumFn from "./enum";
+import float from "./float";
+import integer from "./integer";
+import string from "./string";
+import array from "./array";
 
 const validators = {
   any,
+  array,
   object,
-}
+  float,
+  integer,
+  string,
+  enum: enumFn,
+};
 
 const getRuleType: (rule: RuleItem) => RuleType = (rule) => {
   if (rule.type === undefined && rule.pattern instanceof RegExp) {
-    rule.type = "pattern"
+    rule.type = "pattern";
   }
   if (
-    typeof rule.validator !== "function"
-    && rule.type
-    && !validators.hasOwnProperty(rule.type)
+    typeof rule.validator !== "function" &&
+    rule.type &&
+    !validators.hasOwnProperty(rule.type)
   ) {
-    throw new Error(format("Unknown rule type %s", rule.type))
+    throw new Error(format("Unknown rule type %s", rule.type));
   }
-  return rule.type || "string"
-}
+  return rule.type || "string";
+};
 
 export const getInternalRule: (
   key: string,
   rule: RuleItem,
   option: SchemaOption,
 ) => InternalRuleItem | null = (key, rule, option) => {
-  let internalRule: InternalRuleItem = rule
+  let internalRule: InternalRuleItem = rule;
   if (typeof rule === "function") {
     internalRule = {
       validators: [rule],
-    }
-  }
-  else {
+    };
+  } else {
     // shallow copy
     internalRule = {
       ...rule,
       validators: getExecuteValidators(rule),
-    }
+    };
   }
 
-  internalRule.field = key
-  internalRule.type = getRuleType(rule)
+  internalRule.field = key;
+  internalRule.type = getRuleType(rule);
 
   // subSchema of deep rule created by `fields` will contain `fullField` prop
   // otherwise created by `defaultField`, fill `fullField` and `fullFields` by `_prefixField`
   if (!(rule as InternalRuleItem).fullField) {
     internalRule.fullField = option._prefixField
       ? `${option._prefixField}.${key}`
-      : key
+      : key;
     internalRule.fullFields = option._prefixField
       ? [...option._prefixField.split("."), key]
-      : [key]
+      : [key];
   }
 
   // Fill validator, skip if nothing to be validated.
   if (!internalRule.validators.length && !internalRule.asyncValidator)
-    return null
+    return null;
 
   // Solve deep rules, create new Schema with deep rule options
   if (internalRule.type === "object" || internalRule.type === "array") {
     if (
-      typeof internalRule.fields === "object"
-      || typeof internalRule.defaultField === "object"
+      typeof internalRule.fields === "object" ||
+      typeof internalRule.defaultField === "object"
     ) {
-      const subRules: Record<string, Rule> = internalRule.fields ?? {}
+      const subRules: Record<string, Rule> = internalRule.fields ?? {};
       const subOption: SchemaOption = {
         ...option,
         _prefixField: internalRule.fullField,
-      }
+      };
       if (internalRule.defaultField) {
-        subOption.defaultField = internalRule.defaultField
+        subOption.defaultField = internalRule.defaultField;
       }
-      internalRule.subSchema = new Schema(subRules, subOption)
+      internalRule.subSchema = new Schema(subRules, subOption);
     }
   }
 
-  return internalRule
-}
+  return internalRule;
+};
 
 /**
   @description select validator from RuleItem
@@ -95,21 +104,23 @@ export const getInternalRule: (
 export const getExecuteValidators: (
   rule: RuleItem,
 ) => Array<RuleItem["validator"] | ExecuteValidator> = (rule) => {
-  const exec: Array<RuleItem["validator"] | ExecuteValidator> = []
-
-  const keys = Object.keys(rule).filter(k => k !== "message")
-  if (keys.length === 1 && keys[0] === "required") {
-    exec.push(required)
-  }
-
-  const typeValidator = validators[getRuleType(rule)]
-  if (typeValidator) {
-    exec.push(typeValidator)
-  }
+  const exec: Array<RuleItem["validator"] | ExecuteValidator> = [];
 
   if (typeof rule.validator === "function") {
-    exec.push(rule.validator)
+    exec.push(rule.validator);
+    return exec;
   }
 
-  return exec
-}
+  const keys = Object.keys(rule).filter((k) => k !== "message");
+  if (keys.length === 1 && keys[0] === "required") {
+    exec.push(required);
+    return exec;
+  }
+
+  const typeValidator = validators[getRuleType(rule)];
+  if (typeValidator) {
+    exec.push(typeValidator);
+  }
+
+  return exec;
+};
