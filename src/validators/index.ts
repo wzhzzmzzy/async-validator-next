@@ -16,14 +16,20 @@ import float from "./float";
 import integer from "./integer";
 import string from "./string";
 import array from "./array";
+import date from "./date";
+import number from "./number";
+import pattern from "./pattern";
 
 const validators = {
   any,
   array,
+  date,
   object,
   float,
   integer,
   string,
+  number,
+  pattern,
   enum: enumFn,
 };
 
