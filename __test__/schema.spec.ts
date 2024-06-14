@@ -9,7 +9,7 @@ describe("schema", () => {
   it("support callback", () => {
     validate({ o: { validator: (r, v) => v > 1 } }, { o: 1 }, (errors) => {
       expect(errors.length).toBe(1);
-      expect(errors[0].message).toBe("Validation error on field o");
+      expect(errors[0].message).toBe("o fails");
     });
   });
   it("support required", async () => {

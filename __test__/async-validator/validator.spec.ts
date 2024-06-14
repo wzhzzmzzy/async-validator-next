@@ -1,17 +1,21 @@
+import { describe, expect, it } from "vitest";
 import Schema from "../../src";
-import { describe, it, expect } from "vitest";
 
-const promisify = (fn) => {
+function promisify(fn) {
   return () =>
-    new Promise((resolve) => {
-      fn(resolve);
+    new Promise((resolve, reject) => {
+      try {
+        fn(resolve, reject);
+      } catch (e) {
+        reject(e);
+      }
     });
-};
+}
 
 describe("validator", () => {
   it(
     "works",
-    promisify((done) => {
+    promisify((done, reject) => {
       new Schema({
         v: [
           {
@@ -67,15 +71,19 @@ describe("validator", () => {
           v: 2,
         },
         (errors) => {
-          expect(errors.length).toBe(7);
-          expect(errors[0].message).toBe("e1");
-          expect(errors[1].message).toBe("e2");
-          expect(errors[2].message).toBe("e3");
-          expect(errors[3].message).toBe("v3 fails");
-          expect(errors[4].message).toBe("e5");
-          expect(errors[5].message).toBe("e6");
-          expect(errors[6].message).toBe("");
-          done();
+          try {
+            expect(errors.length).toBe(7);
+            expect(errors[0].message).toBe("e1");
+            expect(errors[1].message).toBe("e2");
+            expect(errors[2].message).toBe("e3");
+            expect(errors[3].message).toBe("v3 fails");
+            expect(errors[4].message).toBe("e5");
+            expect(errors[5].message).toBe("e6");
+            expect(errors[6].message).toBe("");
+            done();
+          } catch (e) {
+            reject(e);
+          }
         },
       );
     }),
@@ -83,7 +91,7 @@ describe("validator", () => {
 
   it(
     "first works",
-    promisify((done) => {
+    promisify((done, reject) => {
       new Schema({
         v: [
           {
@@ -113,9 +121,13 @@ describe("validator", () => {
           first: true,
         },
         (errors) => {
-          expect(errors.length).toBe(1);
-          expect(errors[0].message).toBe("e1");
-          done();
+          try {
+            expect(errors.length).toBe(1);
+            expect(errors[0].message).toBe("e1");
+            done();
+          } catch (e) {
+            reject(e);
+          }
         },
       );
     }),
@@ -124,7 +136,7 @@ describe("validator", () => {
   describe("firstFields", () => {
     it(
       "works for true",
-      promisify((done) => {
+      promisify((done, reject) => {
         new Schema({
           v: [
             {
@@ -168,11 +180,15 @@ describe("validator", () => {
             firstFields: true,
           },
           (errors) => {
-            expect(errors.length).toBe(3);
-            expect(errors[0].message).toBe("e1");
-            expect(errors[1].message).toBe("e3");
-            expect(errors[2].message).toBe("e4");
-            done();
+            try {
+              expect(errors.length).toBe(3);
+              expect(errors[0].message).toBe("e1");
+              expect(errors[1].message).toBe("e3");
+              expect(errors[2].message).toBe("e4");
+              done();
+            } catch (e) {
+              reject(e);
+            }
           },
         );
       }),
@@ -180,7 +196,7 @@ describe("validator", () => {
 
     it(
       "works for array",
-      promisify((done) => {
+      promisify((done, reject) => {
         new Schema({
           v: [
             {
@@ -224,12 +240,16 @@ describe("validator", () => {
             firstFields: ["v"],
           },
           (errors) => {
-            expect(errors.length).toBe(4);
-            expect(errors[0].message).toBe("e1");
-            expect(errors[1].message).toBe("e3");
-            expect(errors[2].message).toBe("e4");
-            expect(errors[3].message).toBe("e5");
-            done();
+            try {
+              expect(errors.length).toBe(4);
+              expect(errors[0].message).toBe("e1");
+              expect(errors[1].message).toBe("e3");
+              expect(errors[2].message).toBe("e4");
+              expect(errors[3].message).toBe("e5");
+              done();
+            } catch (e) {
+              reject(e);
+            }
           },
         );
       }),
@@ -239,7 +259,7 @@ describe("validator", () => {
   describe("promise api", () => {
     it(
       "works",
-      promisify((done) => {
+      promisify((done, reject) => {
         new Schema({
           v: [
             {
@@ -288,15 +308,16 @@ describe("validator", () => {
             v: 2,
           })
           .catch(({ errors, fields }) => {
-            expect(errors.length).toBe(6);
-            expect(errors[0].message).toBe("e1");
-            expect(errors[1].message).toBe("e2");
-            expect(errors[2].message).toBe("e3");
-            expect(errors[3].message).toBe("v3 fails");
-            expect(errors[4].message).toBe("e5");
-            expect(errors[5].message).toBe("e6");
-            expect(fields.v[0].fieldValue).toBe(2);
-            expect(fields).toMatchInlineSnapshot(`
+            try {
+              expect(errors.length).toBe(6);
+              expect(errors[0].message).toBe("e1");
+              expect(errors[1].message).toBe("e2");
+              expect(errors[2].message).toBe("e3");
+              expect(errors[3].message).toBe("v3 fails");
+              expect(errors[4].message).toBe("e5");
+              expect(errors[5].message).toBe("e6");
+              expect(fields.v[0].fieldValue).toBe(2);
+              expect(fields).toMatchInlineSnapshot(`
             Object {
               "v": Array [
                 [Error: e1],
@@ -324,14 +345,17 @@ describe("validator", () => {
               ],
             }
           `);
-            done();
+              done();
+            } catch (e) {
+              reject(e);
+            }
           });
       }),
     );
 
     it(
       "first works",
-      promisify((done) => {
+      promisify((done, reject) => {
         new Schema({
           v: [
             {
@@ -363,9 +387,13 @@ describe("validator", () => {
             },
           )
           .catch(({ errors }) => {
-            expect(errors.length).toBe(1);
-            expect(errors[0].message).toBe("e1");
-            done();
+            try {
+              expect(errors.length).toBe(1);
+              expect(errors[0].message).toBe("e1");
+              done();
+            } catch (e) {
+              reject(e);
+            }
           });
       }),
     );
@@ -373,7 +401,7 @@ describe("validator", () => {
     describe("firstFields", () => {
       it(
         "works for true",
-        promisify((done) => {
+        promisify((done, reject) => {
           new Schema({
             v: [
               {
@@ -419,18 +447,22 @@ describe("validator", () => {
               },
             )
             .catch(({ errors }) => {
-              expect(errors.length).toBe(3);
-              expect(errors[0].message).toBe("e1");
-              expect(errors[1].message).toBe("e3");
-              expect(errors[2].message).toBe("e4");
-              done();
+              try {
+                expect(errors.length).toBe(3);
+                expect(errors[0].message).toBe("e1");
+                expect(errors[1].message).toBe("e3");
+                expect(errors[2].message).toBe("e4");
+                done();
+              } catch (e) {
+                reject(errors);
+              }
             });
         }),
       );
 
       it(
         "works for array",
-        promisify((done) => {
+        promisify((done, reject) => {
           new Schema({
             v: [
               {
@@ -476,19 +508,23 @@ describe("validator", () => {
               },
             )
             .catch(({ errors }) => {
-              expect(errors.length).toBe(4);
-              expect(errors[0].message).toBe("e1");
-              expect(errors[1].message).toBe("e3");
-              expect(errors[2].message).toBe("e4");
-              expect(errors[3].message).toBe("e5");
-              done();
+              try {
+                expect(errors.length).toBe(4);
+                expect(errors[0].message).toBe("e1");
+                expect(errors[1].message).toBe("e3");
+                expect(errors[2].message).toBe("e4");
+                expect(errors[3].message).toBe("e5");
+                done();
+              } catch (e) {
+                reject(e);
+              }
             });
         }),
       );
 
       it(
         "works for no rules fields",
-        promisify((done) => {
+        promisify((done, reject) => {
           new Schema({
             v: [],
             v2: [],
@@ -498,8 +534,12 @@ describe("validator", () => {
               v2: 1,
             })
             .then((source) => {
-              expect(source).toMatchObject({ v: 2, v2: 1 });
-              done();
+              try {
+                expect(source).toMatchObject({ v: 2, v2: 1 });
+                done();
+              } catch (error) {
+                reject(error);
+              }
             });
         }),
       );

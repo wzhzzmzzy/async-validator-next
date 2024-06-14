@@ -23,7 +23,7 @@ import {
   MESSAGES as zhMessages,
 } from "./lang/zh";
 import { getInternalRule } from "./validators";
-import { deepMerge, flattenOnce, format } from "./utils";
+import { deepMerge, flattenOnce } from "./utils";
 
 export * from "./types/async-validator";
 
@@ -167,9 +167,21 @@ class Schema {
     }
 
     // validating
-    const validateResult = keysToBeValid.map((key) => {
-      return this.syncValidateField(key, source, option);
-    });
+    const validateResult = !option.first
+      ? keysToBeValid.map((key) => {
+          return this.syncValidateField(key, source, option);
+        })
+      : [];
+
+    if (option.first) {
+      for (const key of keysToBeValid) {
+        const result = this.syncValidateField(key, source, option);
+        validateResult.push(result);
+        if (option.first && result.length) {
+          break;
+        }
+      }
+    }
     // deep rule validating
     const deepValidateResult = await Promise.all(
       keysToBeValid.map((key) => {
@@ -308,10 +320,10 @@ class Schema {
           } else {
             callback(
               internalRule.message ||
-                format(
-                  option.messages.default,
-                  internalRule.fullField || internalRule.field,
-                ) ||
+                // || format(
+                //   option.messages.default,
+                //   internalRule.fullField || internalRule.field,
+                // )
                 `${internalRule.fullField || internalRule.field} fails`,
             );
           }
@@ -322,8 +334,19 @@ class Schema {
         } else if (res === true || (option.allowTruthy && !!res)) {
           callback();
         }
+        if (!errors.length) continue;
         /* option.first means stop when validate failed first time */
-        if (option.first && errors.length) break;
+        if (option.first) {
+          return errors;
+        }
+        /* option.firstFields means stop when current field validate failed first time */
+        let firstField = option.firstFields === true;
+        if (Array.isArray(option.firstFields)) {
+          firstField = option.firstFields.includes(key);
+        }
+        if (firstField) {
+          return errors;
+        }
       }
     }
     return errors.length ? errors : null;
