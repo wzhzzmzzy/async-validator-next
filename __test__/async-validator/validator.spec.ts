@@ -317,27 +317,42 @@ describe("validator", () => {
               expect(errors[4].message).toBe("e5");
               expect(errors[5].message).toBe("e6");
               expect(fields.v[0].fieldValue).toBe(2);
+
+              // different with async-validator
+              // callback(new Error('e1'))  will return [Error: e1]
               expect(fields).toMatchInlineSnapshot(`
-            Object {
-              "v": Array [
-                [Error: e1],
-                [Error: e2],
+            {
+              "v": [
+                {
+                  "field": "v",
+                  "fieldValue": 2,
+                  "message": "e1",
+                },
+                {
+                  "field": "v",
+                  "fieldValue": 2,
+                  "message": "e2",
+                },
               ],
-              "v2": Array [
-                [Error: e3],
+              "v2": [
+                {
+                  "field": "v2",
+                  "fieldValue": undefined,
+                  "message": "e3",
+                },
               ],
-              "v3": Array [
-                Object {
+              "v3": [
+                {
                   "field": "v3",
                   "fieldValue": undefined,
                   "message": "v3 fails",
                 },
-                Object {
+                {
                   "field": "v3",
                   "fieldValue": undefined,
                   "message": "e5",
                 },
-                Object {
+                {
                   "field": "v3",
                   "fieldValue": undefined,
                   "message": "e6",

@@ -213,7 +213,7 @@ class Schema {
     if (!errors.length) {
       return Promise.resolve(source);
     } else {
-      return Promise.reject({ errors, source });
+      return Promise.reject({ errors, fields });
     }
   }
 
