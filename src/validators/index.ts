@@ -19,7 +19,7 @@ import array from "./array";
 import date from "./date";
 import number from "./number";
 import pattern from "./pattern";
-import typeFn from './type';
+import typeFn from "./type";
 
 const validators = {
   any,
@@ -42,11 +42,38 @@ const getRuleType: (rule: RuleItem) => RuleType = (rule) => {
   if (
     typeof rule.validator !== "function" &&
     rule.type &&
-    !validators.hasOwnProperty(rule.type)
+    !Object.prototype.hasOwnProperty.call(validators, rule.type)
   ) {
     throw new Error(format("Unknown rule type %s", rule.type));
   }
   return rule.type || "string";
+};
+
+/**
+ @description select validator from RuleItem
+ */
+export const getExecuteValidators: (
+  rule: RuleItem,
+) => Array<RuleItem["validator"] | ExecuteValidator> = (rule) => {
+  const exec: Array<RuleItem["validator"] | ExecuteValidator> = [];
+
+  if (typeof rule.validator === "function") {
+    exec.push(rule.validator);
+    return exec;
+  }
+
+  const keys = Object.keys(rule).filter((k) => k !== "message");
+  if (keys.length === 1 && keys[0] === "required") {
+    exec.push(required);
+    return exec;
+  }
+
+  const typeValidator = validators[getRuleType(rule)];
+  if (typeValidator) {
+    exec.push(typeValidator);
+  }
+
+  return exec;
 };
 
 export const getInternalRule: (
@@ -63,8 +90,13 @@ export const getInternalRule: (
     // shallow copy
     internalRule = {
       ...rule,
-      validators: getExecuteValidators(rule),
     };
+  }
+
+  if (!rule.asyncValidator) {
+    internalRule.validators = getExecuteValidators(rule);
+  } else {
+    internalRule.validators = [];
   }
 
   internalRule.field = key;
@@ -91,7 +123,7 @@ export const getInternalRule: (
       typeof internalRule.fields === "object" ||
       typeof internalRule.defaultField === "object"
     ) {
-      const subRules: Record<string, Rule> = internalRule.fields ?? {};
+      const subRules: Record<string, Rule> = internalRule.fields || {};
       const subOption: SchemaOption = {
         ...option,
         _prefixField: internalRule.fullField,
@@ -104,31 +136,4 @@ export const getInternalRule: (
   }
 
   return internalRule;
-};
-
-/**
-  @description select validator from RuleItem
- */
-export const getExecuteValidators: (
-  rule: RuleItem,
-) => Array<RuleItem["validator"] | ExecuteValidator> = (rule) => {
-  const exec: Array<RuleItem["validator"] | ExecuteValidator> = [];
-
-  if (typeof rule.validator === "function") {
-    exec.push(rule.validator);
-    return exec;
-  }
-
-  const keys = Object.keys(rule).filter((k) => k !== "message");
-  if (keys.length === 1 && keys[0] === "required") {
-    exec.push(required);
-    return exec;
-  }
-
-  const typeValidator = validators[getRuleType(rule)];
-  if (typeValidator) {
-    exec.push(typeValidator);
-  }
-
-  return exec;
 };

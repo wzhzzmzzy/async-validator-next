@@ -13,15 +13,11 @@ import type {
   Values,
 } from "./types/async-validator";
 import { SchemaError } from "./types/error";
-import { LANG } from "./lang";
 import {
   VALIDATION_MESSAGES as EN_VALIDATION_MESSAGES,
   MESSAGES as enMessages,
 } from "./lang/en";
-import {
-  VALIDATION_MESSAGES as ZH_VALIDATION_MESSAGES,
-  MESSAGES as zhMessages,
-} from "./lang/zh";
+
 import { getInternalRule } from "./validators";
 import { deepMerge, flattenOnce } from "./utils";
 
@@ -36,16 +32,16 @@ class Schema {
     console.warn(prefix, content);
   }
 
-  static get lang() {
-    return Schema._lang;
-  }
-
-  static set lang(_lang) {
-    Schema._lang = _lang;
-    Schema._errorMessage = _lang === LANG.ZH ? zhMessages : enMessages;
-    Schema._validationMessage =
-      _lang === LANG.ZH ? ZH_VALIDATION_MESSAGES() : EN_VALIDATION_MESSAGES();
-  }
+  // static get lang() {
+  //   return Schema._lang
+  // }
+  //
+  // static set lang(_lang) {
+  //   Schema._lang = _lang
+  //   Schema._errorMessage = _lang === LANG.ZH ? zhMessages : enMessages
+  //   Schema._validationMessage
+  //     = _lang === LANG.ZH ? ZH_VALIDATION_MESSAGES() : EN_VALIDATION_MESSAGES()
+  // }
 
   static get errorMessage() {
     return Schema._errorMessage;
@@ -56,7 +52,7 @@ class Schema {
   }
 
   /* Private Static Members */
-  protected static _lang: LANG = LANG.EN;
+  // protected static _lang: LANG = LANG.EN
   protected static _errorMessage = enMessages;
   protected static _validationMessage = EN_VALIDATION_MESSAGES();
   protected static t(messageName: keyof typeof enMessages) {
@@ -64,7 +60,8 @@ class Schema {
   }
 
   protected static newMessage() {
-    if (Schema.lang === LANG.ZH) return ZH_VALIDATION_MESSAGES();
+    // if (Schema.lang === LANG.ZH)
+    //   return ZH_VALIDATION_MESSAGES()
     return EN_VALIDATION_MESSAGES();
   }
 
@@ -84,7 +81,7 @@ class Schema {
       throw new SchemaError(Schema.t("RULES_TYPE"));
     }
 
-    this._option = option ?? {};
+    this._option = option || {};
 
     Object.keys(rules).forEach((name) => {
       const item: Rule = rules[name];
@@ -130,7 +127,7 @@ class Schema {
       callback = _option;
       option = {};
     } else {
-      option = _option ?? {};
+      option = _option || {};
     }
 
     /* support defaultFields, define provisional keys before validate */
@@ -168,13 +165,13 @@ class Schema {
 
     // validating
     let hasFirstError = false;
-    const validateResult = [];
-    const asyncValidatePromise = [];
+    const validateResult: ValidateError[][] = [];
+    const asyncValidatePromise: Promise<void>[] = [];
 
     for (const key of keysToBeValid) {
       const p = this.asyncValidateField(key, source, option).then((errors) => {
         validateResult.push(errors);
-        if (!hasFirstError && errors?.length) hasFirstError = true;
+        if (!hasFirstError && errors && errors.length) hasFirstError = true;
       });
       if (option.first) {
         await p;
@@ -191,7 +188,7 @@ class Schema {
       }
       const result = this.syncValidateField(key, source, option);
       validateResult.push(result);
-      if (!hasFirstError && result?.length) hasFirstError = true;
+      if (!hasFirstError && result && result.length) hasFirstError = true;
     }
 
     // deep rule validating
@@ -214,7 +211,7 @@ class Schema {
       flattenOnce(deepValidateResult.filter((i) => i !== null)),
     );
     const fields = keysToBeValid.reduce((prev, key, index) => {
-      prev[key] = validateResult[index] ?? [];
+      prev[key] = validateResult[index] || [];
       return prev;
     }, {} as ValidateFieldsError);
 
@@ -294,10 +291,10 @@ class Schema {
         }
       }
 
-      const rules = this.internalRules[key]?.[0];
+      const rules = (this.internalRules[key] || [])[0];
       const newErrors = errorList.map((e) => ({
         message: e instanceof Error ? e.message : e,
-        field: rules?.fullField ?? key,
+        field: rules ? rules.fullField || key : key,
         fieldValue: source[key],
       }));
       for (const error of newErrors) {
@@ -369,7 +366,7 @@ class Schema {
         try {
           res = validator!(internalRule, fieldValue, callback, source, option);
         } catch (error) {
-          console.error?.(error);
+          console.error(error);
           // rethrow to report error
           if (!option.suppressValidatorError) {
             setTimeout(() => {
@@ -436,7 +433,7 @@ class Schema {
         } catch (error) {
           // rethrow to report error
           if (!option.suppressValidatorError) {
-            console.error?.(error);
+            console.error(error);
             setTimeout(() => {
               throw error;
             }, 0);
@@ -463,5 +460,4 @@ class Schema {
   }
 }
 
-export { Schema, LANG };
 export default Schema;

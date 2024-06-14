@@ -1,19 +1,37 @@
 {
   "name": "async-validator-next",
-  "version": "1.0.0",
-  "packageManager": "pnpm@9.1.4",
+  "version": "0.1.2",
+  "packageManager": "pnpm@9.3.0",
   "description": "A successor of async-validator",
   "author": "wzhzzmzzy",
   "license": "MIT",
-  "keywords": [
-    "async-validator"
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
   ],
-  "main": "dist/index.js",
+  "keywords": [
+    "validator",
+    "validate",
+    "async"
+  ],
+  "homepage": "https://github.com/wzhzzmzzy/async-validator-next",
+  "bugs": {
+    "url": "https://github.com/yiminghe/async-validator-next/issues"
+  },
   "scripts": {
     "test": "vitest --config ./vitest.config.ts",
     "coverage": "vitest --config ./vitest.config.ts run --coverage",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "build": "pnpx unbuild"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^2.20.0",
@@ -22,6 +40,7 @@
     "cross-env": "^7.0.3",
     "eslint": "^9.4.0",
     "typescript": "^5.4.5",
+    "unbuild": "^2.0.0",
     "vitest": "^1.6.0"
   }
 }
